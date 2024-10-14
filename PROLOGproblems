@@ -1,0 +1,57 @@
+% TARSO BERTOLINI - TURMA 4B - SEM GRUPO
+%   PROBLEMA 1.
+% gananciosa(Numerador, Denominador, ExpansaoGulosa)
+% Este predicado calcula a expansão gulosa de uma fração N/D.
+gananciosa(0, _, []).  % caso base: se numerador = 0, a expansão está completinha.
+
+gananciosa(N, D, [U | Resto]) :-
+    N > 0, 
+    U is ceiling(D / N), % maior fração unitária usando ceiling.
+    N1 is N * U - D,     % atualiza numerador.
+    D1 is D * U,         % atualiza denominador.
+    gananciosa(N1, D1, Resto). % continua recursivamente a expansão.
+
+%experimente consultar:
+% "?- gananciosa(3, 7, EG).".
+% "?- gananciosa(3, 121, EG).".
+-----------------------------------------------------------------------------------------
+%   PROBLEMA 2.
+%   só gostaria de entender pq que a obs de prolog é um '%', eu sempre leio como resto de ou percento
+% define as pedrinhas
+stone(1, 2).
+stone(2, 3).
+stone(3, 4).
+stone(4, 1).
+stone(2, 2).
+stone(4, 6).
+stone(6, 2).
+
+% iniciando bendito jogo em prolog nunca achei que faria algo assim
+domino(Stones) :-
+    findall(stone(X, Y), stone(X, Y), AllStones), % coleta as pedrinhas
+    member(StartStone, AllStones),                % escolhe a inicial
+    select(StartStone, AllStones, Remaining),     % por consequência retira ela do jogo
+    play(StartStone, Remaining, [StartStone], Stones). % finalmente iniciamos
+
+% predicado pra poder jogar
+play(_, [], Path, Path). % Se não há mais pedras, retorna o caminho
+play(CurrentStone, Remaining, Path, Solution) :-
+    CurrentStone = stone(X, Y),                  % pega os valores da pedra atual
+    findall(NextStone, 
+        (member(NextStone, Remaining),            % checa as restantes
+        can_place(CurrentStone, NextStone)),      % se pode colocar
+        PossibleStones),                          % faz o própio nome do cmd, checa quais as possíveis
+    member(NextStone, PossibleStones),           % escolhe a pedra
+    select(NextStone, Remaining, NewRemaining),  % tira a pedra
+    play(NextStone, NewRemaining, [NextStone | Path], Solution). % segue indo o programa
+
+% existe pedra?
+can_place(stone(X, Y), stone(A, B)) :-
+    (X = A; X = B; Y = A; Y = B). 
+
+% inverter pra ficar corretinho
+domino(Stones) :-
+    domino(RevStones),
+    reverse(RevStones, Stones). % reverte a lista para a ordem correta final
+%só lembrando que  as mensagens na execução são apenas lembretes e não erros vc já deve saber disso mas né sempre bom avisar <3
+%  experimenta realizar uma query de '?- domino(Stones).'.
